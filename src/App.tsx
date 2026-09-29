@@ -588,26 +588,43 @@ export default function App() {
 
               <form
                 className="contact-form"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  const form = event.currentTarget
-                  const data = new FormData(form)
-                  const name = String(data.get("name") || "")
-                  const email = String(data.get("email") || "")
-                  const company = String(data.get("company") || "")
-                  const subject = String(data.get("subject") || "Portfolio enquiry")
-                  const message = String(data.get("message") || "")
+                onSubmit={async (event) => {
+                  event.preventDefault();
 
-                  const body = [
-                    `Name: ${name}`,
-                    `Email: ${email}`,
-                    `Company: ${company || "Not provided"}`,
-                    "",
-                    message,
-                  ].join("\n")
+                  const form = event.currentTarget;
+                  const data = new FormData(form);
 
-                  window.location.href =
-                    `mailto:rajeshmarakkannu1998@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+                  const name = String(data.get("name") || "");
+                  const email = String(data.get("email") || "");
+                  const company = String(data.get("company") || "");
+                  const subject = String(data.get("subject") || "");
+                  const message = String(data.get("message") || "");
+
+                  try {
+                    const mailto = `mailto:rajeshmarakkannu1998@gmail.com?subject=${encodeURIComponent(
+                      `Portfolio enquiry: ${subject || "Project enquiry"}`,
+                    )}&body=${encodeURIComponent(
+                      [
+                        `Name: ${name}`,
+                        `Email: ${email}`,
+                        `Company: ${company || "Not provided"}`,
+                        "",
+                        "Message:",
+                        message,
+                      ].join("\n"),
+                    )}`;
+
+                    window.location.href = mailto;
+                    form.reset();
+                    alert("Your email app has been opened with the enquiry details.");
+                  } catch (error) {
+                    console.error(error);
+                    alert(
+                      error instanceof Error
+                        ? error.message
+                        : "Failed to prepare the enquiry. Please try again.",
+                    );
+                  }
                 }}
               >
                 <div className="form-row">
