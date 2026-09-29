@@ -1,54 +1,79 @@
-import { createElement, type ReactNode } from "react"
+import { createElement, useRef, useState, type ReactNode } from "react"
 import questImage from "./assets/devices/quest.jpg"
 import spatialDisplayImage from "./assets/devices/spatial-display.jpg"
 import tabletImage from "./assets/devices/tablet.jpg"
 import visionProImage from "./assets/devices/vision-pro.jpg"
 import resumeUrl from "./imports/Rajesh_Kumar_M_Resume.pdf"
 
+
 type IconName = "arrow" | "code" | "cube" | "database" | "github" | "linkedin" | "mail" | "spark" | "terminal"
 
 const skills = [
   {
     icon: "code" as IconName,
-    title: "Frontend engineering",
-    text: "React.js, TypeScript, Context API, React Router, Material UI",
+    title: "Frontend",
+    text: "JavaScript, React.js, TypeScript, React Redux, Context API, React Router, Material UI, HTML5/CSS3",
+  },
+  {
+    icon: "terminal" as IconName,
+    title: "Backend & APIs",
+    text: "Node.js, Express.js, ASP.NET Core Web API, RESTful APIs, JWT Authentication, Entity Framework Core",
   },
   {
     icon: "database" as IconName,
-    title: "Backend & data",
-    text: "Node.js, Express.js, REST APIs, JWT, RBAC, Nodemailer",
+    title: "Data & Cloud",
+    text: "MongoDB, SQL Server, Azure App Service, Blob Storage, Cosmos DB, AWS",
   },
   {
-    icon: "spark" as IconName,
-    title: "Database & cloud",
-    text: "MongoDB, SQL, Azure App Service, Blob Storage, Cosmos DB, AWS",
-  },
-  {
-    icon: "cube" as IconName,
-    title: "Delivery & tooling",
-    text: "Git, Azure DevOps, CI/CD pipelines, Postman, Jira, Agile",
+    icon: "code" as IconName,
+    title: "Engineering Tools",
+    text: "Git, Azure DevOps, Postman, Jira, Agile development, CI/CD pipelines",
   },
 ]
 
-const projects = [
+const projects: {
+  number: string
+  eyebrow: string
+  title: string
+  text: string
+  role: string
+  impact: string
+  tags: string[]
+  className: string
+}[] = [
   {
     number: "01",
-    eyebrow: "MERN · Enterprise product",
+    eyebrow: "Full stack · Enterprise application",
     title: "Smart Worker Suite",
-    text: "A field-operations platform with a visual workflow builder, user and license management, billing, reporting, remote assistance, and production-ready access control.",
-    impact: "Reusable workflows + real-time remote support",
-    tags: ["React Flow", "Node.js", "MongoDB", "Twilio WebRTC"],
+    text: "A full-stack field-operations application for designing and managing reusable workflows, with enterprise modules for users, licenses, billing, invoicing, reporting, and remote assistance.",
+    role: "Developed React interfaces with Redux and Context API, built ASP.NET Core REST APIs, implemented data access and business modules, and integrated real-time communication using Twilio Video SDK and WebRTC.",
+    impact: "Workflow automation, enterprise management, and remote assistance",
+    tags: ["React.js", "React Flow", "Redux", "ASP.NET Core", "MongoDB", "Twilio Video", "WebRTC", "Azure"],
     className: "project-coral",
+
   },
   {
     number: "02",
     eyebrow: "AI product · React",
     title: "AI-Powered Form Builder",
-    text: "A CRM-native form builder that replaces generic form tools with AI-assisted creation and automatically maps submitted data back to the right CRM records.",
-    impact: "From AI-assisted creation to connected CRM data",
+    text: "A CRM-native form builder designed to simplify form creation and connect submitted responses directly with CRM records.",
+    role: "Built the React interface from scratch and developed UI flows for AI-assisted form generation and post-submission data management.",
+    impact: "AI-assisted form creation and automated CRM data mapping",
     tags: ["React.js", "AI-assisted UI", "CRM", "Axios"],
     className: "project-mint",
+
   },
+  {
+    number: "03",
+    eyebrow: "Frontend · Movie discovery application",
+    title: "CineSphere",
+    text: "A React-based movie discovery single-page application for browsing films, exploring details, and finding content through a responsive interface.",
+    role: "Built reusable React components, implemented client-side routing and API integration, and designed responsive movie browsing and detail experiences.",
+    impact: "Responsive movie discovery and detail browsing experience",
+    tags: ["React.js", "JavaScript", "REST API", "React Router", "CSS3"],
+    className: "project-coral",
+  },
+
 ]
 
 const experience = [
@@ -57,12 +82,14 @@ const experience = [
     role: "Associate Software Engineer",
     company: "Bangalore, India",
     description:
-      "Architecting and delivering a production MERN application for internal field operations while collaborating with product owners and business analysts in Agile sprints.",
+      "Developing and delivering full-stack applications for internal field operations in collaboration with product owners and business analysts within Agile development teams.",
     highlights: [
-      "Developed reusable React components across multiple product modules",
-      "Optimized MongoDB queries with filtering, pagination, and selective retrieval",
-      "Implemented secure JWT authentication and role-based access control",
-      "Integrated Azure CI/CD for automated, zero-downtime deployments",
+      "Developed reusable React components across multiple application modules, improving consistency and maintainability",
+      "Built and integrated RESTful APIs using Node.js, Express.js, and ASP.NET Core Web API",
+      "Implemented JWT authentication and role-based access control (RBAC) for secure application access",
+      "Optimized database queries using filtering, pagination, and selective data retrieval",
+      "Integrated Azure CI/CD pipelines for automated builds and production deployments",
+      "Followed Git branching, peer code reviews, Jira workflows, and Agile sprint practices",
     ],
   },
 ]
@@ -124,7 +151,7 @@ function Link({
   return createElement("a", { href, className, "aria-label": label }, children)
 }
 
-function Icon({ name, size = 20 }: { name: IconName size?: number }) {
+function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, ReactNode> = {
     arrow: (
       <>
@@ -203,6 +230,90 @@ function Icon({ name, size = 20 }: { name: IconName size?: number }) {
   )
 }
 
+function Carousel({
+  items,
+  label,
+  className = "",
+}: {
+  items: ReactNode[]
+  label: string
+  className?: string
+}) {
+  const track = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+
+  const goTo = (i: number) => {
+    const el = track.current
+    if (!el) return
+    const next = (i + items.length) % items.length
+    const child = el.children[next] as HTMLElement
+    el.scrollTo({ left: child.offsetLeft, behavior: "smooth" })
+    setActive(next)
+  }
+
+  const onScroll = () => {
+    const el = track.current
+    if (!el) return
+
+    // At the far right end, the last slide can't reach the left edge, so treat it as active.
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
+      setActive(items.length - 1)
+      return
+    }
+
+    let nearest = 0
+    let min = Infinity
+    Array.from(el.children).forEach((c, i) => {
+      const d = Math.abs((c as HTMLElement).offsetLeft - el.scrollLeft)
+      if (d < min) {
+        min = d
+        nearest = i
+      }
+    })
+    setActive(nearest)
+  }
+
+  return (
+    <div
+      className={`carousel ${className}`}
+      aria-roledescription="carousel"
+      aria-label={label}
+    >
+      <div className="carousel-track" ref={track} onScroll={onScroll}>
+        {items.map((item, i) => (
+          <div className="carousel-slide" key={i}>
+            {item}
+          </div>
+        ))}
+      </div>
+      <div className="carousel-controls">
+        <div className="carousel-dots">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              className={i === active ? "is-active" : ""}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+        <div className="carousel-arrows">
+          <button
+            onClick={() => goTo(active - 1)}
+            aria-label="Previous slide"
+            className="flip"
+          >
+            <Icon name="arrow" size={18} />
+          </button>
+          <button onClick={() => goTo(active + 1)} aria-label="Next slide">
+            <Icon name="arrow" size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SectionIntro({
   label,
   title,
@@ -255,9 +366,9 @@ export default function App() {
               </span>
             </Heading>
             <p className="hero-description">
-              I&apos;m Rajesh, a MERN Stack Developer with 2+ years of
-              experience delivering scalable web applications, reusable React
-              systems, secure APIs, and cloud deployments.
+              I&apos;m Rajesh, a Full-Stack Developer with 2+ years of experience
+              building scalable web applications using React.js, Node.js,
+              Express.js, ASP.NET Core, MongoDB, and RESTful APIs.
             </p>
             <div className="hero-actions">
               <Link className="button button-primary" href="#work">
@@ -270,7 +381,7 @@ export default function App() {
             <div className="hero-proof">
               <div>
                 <strong>2+</strong>
-                <span>Years in MERN</span>
+                <span>Years of experience</span>
               </div>
               <div>
                 <strong>9.40</strong>
@@ -299,7 +410,7 @@ export default function App() {
                 <Icon name="terminal" size={30} />
               </div>
               <span>Primary expertise</span>
-              <strong>MERN</strong>
+              <strong>Full Stack</strong>
             </div>
             <div className="tech-chip chip-ai">
               <Icon name="spark" size={16} /> AI interfaces
@@ -317,8 +428,8 @@ export default function App() {
           <div className="container">
             <SectionIntro
               label="What I bring"
-              title="A complete MERN delivery toolkit."
-              text="My primary strength is building reliable full-stack products—from polished React interfaces to secure APIs, databases, and cloud delivery."
+              title="Full-stack engineering across the application lifecycle."
+              text="I work across frontend development, backend APIs, database integration, authentication, state management, and cloud deployment."
             />
             <div className="skills-grid">
               {skills.map((skill) => (
@@ -337,8 +448,8 @@ export default function App() {
         <section className="projects-section container" id="work">
           <SectionIntro
             label="Selected work"
-            title="Products I have helped shape."
-            text="Work is the proof: these are the products, features, and technical problems I have directly built or solved."
+            title="Selected projects and technical contributions."
+            text="A concise view of the applications and features I have developed across full-stack, enterprise, and AI-assisted product work."
           />
           <div className="projects-list">
             {projects.map((project) => (
@@ -351,6 +462,9 @@ export default function App() {
                   <span className="project-eyebrow">{project.eyebrow}</span>
                   <Heading as="h3">{project.title}</Heading>
                   <p>{project.text}</p>
+                  <p className="project-role">
+                    <strong>My role</strong> {project.role}
+                  </p>
                   <div className="impact">
                     <span className="impact-mark">↗</span>
                     {project.impact}
@@ -361,13 +475,7 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-                <Link
-                  className="project-link"
-                  href="#contact"
-                  label={`View ${project.title} case study`}
-                >
-                  <Icon name="arrow" />
-                </Link>
+
               </article>
             ))}
           </div>
@@ -378,8 +486,8 @@ export default function App() {
             <div className="experience-heading">
               <SectionIntro
                 label="Experience"
-                title="Where I applied those skills."
-                text="Experience is the professional context: my role, responsibilities, collaboration, and delivery inside an engineering team."
+                title="Professional experience."
+                text="Full-stack development across frontend interfaces, backend services, database integration, security, and cloud delivery."
               />
               <Link className="text-link" href={resumeUrl}>
                 Get my full résumé <Icon name="arrow" size={18} />
@@ -408,23 +516,22 @@ export default function App() {
           <div className="container">
             <div className="xr-heading">
               <div>
-                <span className="eyebrow">Secondary expertise · XR</span>
+                <span className="eyebrow">Additional technical experience · XR</span>
                 <Heading className="section-title">
-                  Beyond the browser, into spatial computing.
+                  Exploring 3D and spatial computing.
                 </Heading>
               </div>
               <p>
-                Alongside my core MERN work, I have hands-on exposure to AR, VR,
-                and MR experiences across headsets, tablets, and glasses-free
-                spatial displays.
+                Alongside full-stack development, I have hands-on exposure to 3D and
+                immersive technologies, including AR, VR, MR, and
+                glasses-free spatial displays.
               </p>
             </div>
-            <div className="device-grid">
-              {devices.map((device, index) => (
-                <article
-                  className={`device-card device-${index + 1}`}
-                  key={device.name}
-                >
+            <Carousel
+              className="xr-carousel"
+              label="XR devices"
+              items={devices.map((device) => (
+                <article className="device-card">
                   <img src={device.image} alt={device.alt} />
                   <div className="device-overlay">
                     <span>{device.type}</span>
@@ -433,7 +540,7 @@ export default function App() {
                   </div>
                 </article>
               ))}
-            </div>
+            />
           </div>
         </section>
 
@@ -441,13 +548,13 @@ export default function App() {
           <div className="about-card">
             <div className="about-monogram">RK</div>
             <div className="about-copy">
-              <span className="eyebrow">A little about me</span>
-              <Heading>Full-stack by focus. Spatial by curiosity.</Heading>
+              <span className="eyebrow">About</span>
+              <Heading>Full-stack development with an interest in AI and XR.</Heading>
               <p>
-                I combine a strong MERN foundation with an interest in AI
-                interfaces and immersive technology. I enjoy translating complex
-                business workflows into clear, secure, and maintainable products
-                while continuously exploring what comes next.
+                I build maintainable web applications across frontend, backend,
+                APIs, databases, authentication, and cloud deployment. I also
+                explore AI-assisted interfaces and immersive technologies to
+                understand how emerging tools can solve practical business problems.
               </p>
               <div className="about-meta">
                 <span>Chennai, Tamil Nadu</span>
@@ -459,34 +566,89 @@ export default function App() {
 
         <section className="contact-section container" id="contact">
           <div className="contact-card">
-            <span className="eyebrow">Let&apos;s connect</span>
-            <Heading>Building something meaningful?</Heading>
-            <p>
-              I&apos;m looking for a full-time MERN or full-stack engineering
-              role where I can contribute production experience and keep growing
-              with an ambitious team.
-            </p>
-            <div className="contact-actions">
-              <Link
-                className="button button-light"
-                href="mailto:rajeshmarakkannu1998@gmail.com"
-              >
-                <Icon name="mail" /> Email Rajesh
-              </Link>
-              <div className="socials">
-                <Link
-                  href="https://www.linkedin.com/in/rajesh0211"
-                  label="Rajesh's LinkedIn profile"
-                >
-                  <Icon name="linkedin" />
-                </Link>
-                <Link
-                  href="mailto:rajeshmarakkannu1998@gmail.com"
-                  label="Email Rajesh"
-                >
-                  <Icon name="mail" />
-                </Link>
+            <div className="contact-layout">
+              <div className="contact-intro">
+                <span className="eyebrow">Contact</span>
+                <Heading>Let&apos;s discuss your next project.</Heading>
+                <p>
+                  Have a full-stack opportunity, project requirement, or technical
+                  collaboration in mind? Send me a message and I&apos;ll get back to you.
+                </p>
+
+                <div className="contact-details">
+                  <a href="mailto:rajeshmarakkannu1998@gmail.com">
+                    rajeshmarakkannu1998@gmail.com
+                  </a>
+                  <a href="tel:+918939543917">+91 89395 43917</a>
+                  <a href="https://www.linkedin.com/in/rajesh0211">
+                    LinkedIn profile
+                  </a>
+                </div>
               </div>
+
+              <form
+                className="contact-form"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  const form = event.currentTarget
+                  const data = new FormData(form)
+                  const name = String(data.get("name") || "")
+                  const email = String(data.get("email") || "")
+                  const company = String(data.get("company") || "")
+                  const subject = String(data.get("subject") || "Portfolio enquiry")
+                  const message = String(data.get("message") || "")
+
+                  const body = [
+                    `Name: ${name}`,
+                    `Email: ${email}`,
+                    `Company: ${company || "Not provided"}`,
+                    "",
+                    message,
+                  ].join("\n")
+
+                  window.location.href =
+                    `mailto:rajeshmarakkannu1998@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+                }}
+              >
+                <div className="form-row">
+                  <label>
+                    <span>Name</span>
+                    <input name="name" type="text" placeholder="Your name" required />
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input name="email" type="email" placeholder="you@company.com" required />
+                  </label>
+                </div>
+
+                <div className="form-row">
+                  <label>
+                    <span>Company <em>Optional</em></span>
+                    <input name="company" type="text" placeholder="Company or organization" />
+                  </label>
+                  <label>
+                    <span>Subject</span>
+                    <input name="subject" type="text" placeholder="Project / opportunity" required />
+                  </label>
+                </div>
+
+                <label>
+                  <span>Message</span>
+                  <textarea
+                    name="message"
+                    rows={6}
+                    placeholder="Tell me briefly about the project, role, or requirement..."
+                    required
+                  />
+                </label>
+
+                <button className="button button-light form-submit" type="submit">
+                  Send enquiry <Icon name="arrow" size={17} />
+                </button>
+                <p className="form-note">
+                  Submitting opens your default email application with the enquiry details.
+                </p>
+              </form>
             </div>
           </div>
         </section>
