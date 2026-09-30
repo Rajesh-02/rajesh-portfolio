@@ -5,8 +5,9 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// In production set CORS_ORIGIN to your portfolio URL, e.g. https://your-portfolio.com
+app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+app.use(express.json({ limit: "20kb" }));
 
 const emailUser = process.env.EMAIL_USER;
 const emailPassword = process.env.EMAIL_APP_PASSWORD;
@@ -27,6 +28,10 @@ transporter.verify((error) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("Portfolio contact API is running.");
+});
+
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, company, subject, message } = req.body;
@@ -39,7 +44,8 @@ app.post("/api/contact", async (req, res) => {
 
     if (!emailUser || !emailPassword) {
       return res.status(500).json({
-        message: "Email service is not configured. Add a valid Gmail app password in the server environment.",
+        message:
+          "Email service is not configured. Add a valid Gmail app password in the server environment.",
       });
     }
 
@@ -47,7 +53,7 @@ app.post("/api/contact", async (req, res) => {
       from: emailUser,
       to: emailUser,
       replyTo: email,
-      subject,
+      subject: `Portfolio enquiry: ${subject}`,
       text: `
 Name: ${name}
 Email: ${email}
@@ -69,13 +75,11 @@ ${message}
         ? "Email authentication failed. Update the Gmail app password in the server environment."
         : "Failed to send enquiry.";
 
-    res.status(500).json({
-      message,
-    });
+    res.status(500).json({ message });
   }
 });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

@@ -1,10 +1,12 @@
-import { createElement, useRef, useState, type ReactNode } from "react"
+import { createElement, useRef, useState, type FormEvent, type ReactNode } from "react"
 import questImage from "./assets/devices/quest.jpg"
 import spatialDisplayImage from "./assets/devices/spatial-display.jpg"
 import tabletImage from "./assets/devices/tablet.jpg"
 import visionProImage from "./assets/devices/vision-pro.jpg"
 import resumeUrl from "./imports/Rajesh_Kumar_M_Resume.pdf"
 
+// Backend URL. Set VITE_API_URL in your .env when you deploy the server.
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000"
 
 type IconName = "arrow" | "code" | "cube" | "database" | "github" | "linkedin" | "mail" | "spark" | "terminal"
 
@@ -50,7 +52,6 @@ const projects: {
     impact: "Workflow automation, enterprise management, and remote assistance",
     tags: ["React.js", "React Flow", "Redux", "ASP.NET Core", "MongoDB", "Twilio Video", "WebRTC", "Azure"],
     className: "project-coral",
-
   },
   {
     number: "02",
@@ -61,7 +62,6 @@ const projects: {
     impact: "AI-assisted form creation and automated CRM data mapping",
     tags: ["React.js", "AI-assisted UI", "CRM", "Axios"],
     className: "project-mint",
-
   },
   {
     number: "03",
@@ -73,7 +73,6 @@ const projects: {
     tags: ["React.js", "JavaScript", "REST API", "React Router", "CSS3"],
     className: "project-coral",
   },
-
 ]
 
 const experience = [
@@ -333,6 +332,46 @@ function SectionIntro({
 }
 
 export default function App() {
+  const [status, setStatus] = useState<{
+    type: "idle" | "sending" | "success" | "error"
+    message: string
+  }>({ type: "idle", message: "" })
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = event.currentTarget // capture before any await
+    const data = Object.fromEntries(new FormData(form))
+
+    setStatus({ type: "sending", message: "" })
+
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      const result = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to send enquiry.")
+      }
+
+      form.reset()
+      setStatus({
+        type: "success",
+        message: "Thanks! Your enquiry has been sent. I'll get back to you soon.",
+      })
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
+      })
+    }
+  }
+
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -475,7 +514,6 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-
               </article>
             ))}
           </div>
@@ -522,8 +560,8 @@ export default function App() {
                 </Heading>
               </div>
               <p>
-                Alongside full-stack development, I have hands-on exposure to 3D and
-                immersive technologies, including AR, VR, MR, and
+                Alongside full-stack development, I have hands-on exposure to 3D
+                and immersive technologies, including AR, VR, MR, and
                 glasses-free spatial displays.
               </p>
             </div>
@@ -554,7 +592,8 @@ export default function App() {
                 I build maintainable web applications across frontend, backend,
                 APIs, databases, authentication, and cloud deployment. I also
                 explore AI-assisted interfaces and immersive technologies to
-                understand how emerging tools can solve practical business problems.
+                understand how emerging tools can solve practical business
+                problems.
               </p>
               <div className="about-meta">
                 <span>Chennai, Tamil Nadu</span>
@@ -571,8 +610,9 @@ export default function App() {
                 <span className="eyebrow">Contact</span>
                 <Heading>Let&apos;s discuss your next project.</Heading>
                 <p>
-                  Have a full-stack opportunity, project requirement, or technical
-                  collaboration in mind? Send me a message and I&apos;ll get back to you.
+                  Have a full-stack opportunity, project requirement, or
+                  technical collaboration in mind? Send me a message and
+                  I&apos;ll get back to you.
                 </p>
 
                 <div className="contact-details">
@@ -586,47 +626,7 @@ export default function App() {
                 </div>
               </div>
 
-              <form
-                className="contact-form"
-                onSubmit={async (event) => {
-                  event.preventDefault();
-
-                  const form = event.currentTarget;
-                  const data = new FormData(form);
-
-                  const name = String(data.get("name") || "");
-                  const email = String(data.get("email") || "");
-                  const company = String(data.get("company") || "");
-                  const subject = String(data.get("subject") || "");
-                  const message = String(data.get("message") || "");
-
-                  try {
-                    const mailto = `mailto:rajeshmarakkannu1998@gmail.com?subject=${encodeURIComponent(
-                      `Portfolio enquiry: ${subject || "Project enquiry"}`,
-                    )}&body=${encodeURIComponent(
-                      [
-                        `Name: ${name}`,
-                        `Email: ${email}`,
-                        `Company: ${company || "Not provided"}`,
-                        "",
-                        "Message:",
-                        message,
-                      ].join("\n"),
-                    )}`;
-
-                    window.location.href = mailto;
-                    form.reset();
-                    alert("Your email app has been opened with the enquiry details.");
-                  } catch (error) {
-                    console.error(error);
-                    alert(
-                      error instanceof Error
-                        ? error.message
-                        : "Failed to prepare the enquiry. Please try again.",
-                    );
-                  }
-                }}
-              >
+              <form className="contact-form" onSubmit={handleSubmit}>
                 <div className="form-row">
                   <label>
                     <span>Name</span>
@@ -640,7 +640,9 @@ export default function App() {
 
                 <div className="form-row">
                   <label>
-                    <span>Company <em>Optional</em></span>
+                    <span>
+                      Company <em>Optional</em>
+                    </span>
                     <input name="company" type="text" placeholder="Company or organization" />
                   </label>
                   <label>
@@ -659,11 +661,19 @@ export default function App() {
                   />
                 </label>
 
-                <button className="button button-light form-submit" type="submit">
-                  Send enquiry <Icon name="arrow" size={17} />
+                <button
+                  className="button button-light form-submit"
+                  type="submit"
+                  disabled={status.type === "sending"}
+                >
+                  {status.type === "sending" ? "Sending..." : "Send enquiry"}{" "}
+                  <Icon name="arrow" size={17} />
                 </button>
-                <p className="form-note">
-                  Submitting opens your default email application with the enquiry details.
+                <p
+                  className={`form-note ${status.type === "success" ? "is-success" : ""} ${status.type === "error" ? "is-error" : ""}`}
+                  role="status"
+                >
+                  {status.message || "Your message goes straight to my inbox."}
                 </p>
               </form>
             </div>
