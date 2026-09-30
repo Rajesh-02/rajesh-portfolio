@@ -5,9 +5,6 @@ import tabletImage from "./assets/devices/tablet.jpg"
 import visionProImage from "./assets/devices/vision-pro.jpg"
 import resumeUrl from "./imports/Rajesh_Kumar_M_Resume.pdf"
 
-// Backend URL. Set VITE_API_URL in your .env when you deploy the server.
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000"
-
 type IconName = "arrow" | "code" | "cube" | "database" | "github" | "linkedin" | "mail" | "spark" | "terminal"
 
 const skills = [
@@ -339,37 +336,37 @@ export default function App() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const form = event.currentTarget // capture before any await
+    const form = event.currentTarget
     const data = Object.fromEntries(new FormData(form))
+
+    const name = String(data.name ?? "").trim()
+    const email = String(data.email ?? "").trim()
+    const company = String(data.company ?? "").trim()
+    const subject = String(data.subject ?? "").trim()
+    const message = String(data.message ?? "").trim()
+
+    if (!name || !email || !subject || !message) {
+      setStatus({
+        type: "error",
+        message: "Please fill in all required fields before sending your enquiry.",
+      })
+      return
+    }
 
     setStatus({ type: "sending", message: "" })
 
-    try {
-      const res = await fetch(`${API_URL}/api/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      const result = await res.json().catch(() => ({}))
+    const mailto = `mailto:rajeshmarakkannu1998@gmail.com?subject=${encodeURIComponent(
+      `Portfolio enquiry: ${subject}`,
+    )}&body=${encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\nCompany: ${company || "Not provided"}\n\nMessage:\n${message}`,
+    )}`
 
-      if (!res.ok) {
-        throw new Error(result.message || "Failed to send enquiry.")
-      }
-
-      form.reset()
-      setStatus({
-        type: "success",
-        message: "Thanks! Your enquiry has been sent. I'll get back to you soon.",
-      })
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again.",
-      })
-    }
+    window.location.href = mailto
+    form.reset()
+    setStatus({
+      type: "success",
+      message: "Your email app is opening with your enquiry ready to send.",
+    })
   }
 
   return (
